@@ -1,0 +1,114 @@
+#!/usr/bin/env php
+<?php
+define('WORKERMAND_ROOT', dirname(dirname(__FILE__)));
+
+$loader = require WORKERMAND_ROOT . '/vendor/autoload.php';
+use Workerman\Worker;
+
+define('WORKERMAND_VER', 'workermand/0.0.1 (workerman/' . Worker::VERSION . ')');
+
+$opt_show_ver = false;
+$opt_show_help = false;
+$opt_signal = null;
+$conf_file = WORKERMAND_ROOT . '/etc/workerman.json';
+
+$options = getopt("hvs:c:");
+foreach ($options as $opt => $v) {
+
+    switch ($opt) {
+        case 'v':
+            $opt_show_ver = true; continue;
+
+        case 'h':
+            $opt_show_ver = true;
+            $opt_show_help = true;
+            continue;
+
+        case 's':
+            $opt_signal = $v;
+            continue;
+
+        case 'c':
+            $conf_file = $v;
+            continue;
+    }
+}
+
+if ($opt_show_ver) {
+    write_stderr('workermand version: ' . WORKERMAND_VER . PHP_EOL);
+
+    if ($opt_show_help) {
+        write_stderr(
+            "Usage: workermand [-hv] [-s signal] [-c filename]" . PHP_EOL . PHP_EOL.
+            "Options:" .PHP_EOL.
+            "  -h         : this help" .PHP_EOL.
+            "  -v            : show version and exit" .PHP_EOL.
+            "  -m            : show all modules and exit" .PHP_EOL.
+            "  -l            : show all directives and exit" .PHP_EOL.
+            "  -V            : show version, modules and configure options ".
+                               "then exit" .PHP_EOL.
+            "  -t            : test configuration and exit" .PHP_EOL.
+            "  -d            : dump configuration and exit" .PHP_EOL.
+            "  -q            : suppress non-error messages ".
+                               "during configuration testing" .PHP_EOL.
+            "  -s signal     : send signal to a master process: ".
+                               "stop, quit, reopen, reload" .PHP_EOL.
+            "  -p prefix     : set prefix path (default: NONE)" .PHP_EOL.
+            "  -c filename   : set configuration file (default: )".PHP_EOL
+        );
+    }
+    return 0;
+}
+
+if ($opt_signal) {
+    switch ($opt_signal) {
+        case 'stop':
+            exec_worker('workermand', 'stop');
+            break;
+
+        default:
+            write_stderr('invalid signal:' . $opt_signal . PHP_EOL);
+            return 1;
+    }
+    return 0;
+}
+
+if (!file_exists($conf_file)) {
+    write_stderr('conf file not exists:' . $conf_file . PHP_EOL);
+    return 1;
+}
+$conf = json_decode(file_get_contents($conf_file), true);
+if ($conf === NULL) {
+    write_stderr($conf_file . ' does not contain valid JSON' . PHP_EOL);
+    return 1;
+}
+
+$loader->set('Workers', WORKERMAND_ROOT . '/lib');
+
+foreach ($conf['apps'] as $name => $app) {
+    $className = "\\Workers\\{$app['worker_class']}";
+    if (!class_exists($className)) {
+        write_stderr('class not exists:' . $className. PHP_EOL);
+        return 1;
+    }
+
+    $worker = new $className($app['listen']);
+    $worker->count = $app['worker_processes'];
+    $worker->name = $name;
+}
+
+exec_worker('workermand', 'start');
+
+function write_stderr($str)
+{
+    file_put_contents('php://stderr', $str);
+}
+
+function exec_worker()
+{
+    global $argv, $argc;
+
+    $argv = func_get_args();
+    $argc = count($argv);
+    Worker::runAll();
+}
