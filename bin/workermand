@@ -63,7 +63,10 @@ if ($opt_show_ver) {
 if ($opt_signal) {
     switch ($opt_signal) {
         case 'stop':
-            exec_worker('workermand', 'stop');
+        case 'reload':
+        case 'restart':
+        case 'status':
+            exec_worker('workermand', $opt_signal);
             break;
 
         default:
@@ -84,6 +87,8 @@ if ($conf === NULL) {
 }
 
 $loader->set('Workers', WORKERMAND_ROOT . '/lib');
+$loader->set('Protocols', WORKERMAND_ROOT . '/lib');
+$loader->set('Transport', WORKERMAND_ROOT . '/lib');
 
 foreach ($conf['apps'] as $name => $app) {
     $className = "\\Workers\\{$app['worker_class']}";
@@ -92,7 +97,7 @@ foreach ($conf['apps'] as $name => $app) {
         return 1;
     }
 
-    $worker = new $className($app['listen']);
+    $worker = new $className($app['listen'], null, $app);
     $worker->count = $app['worker_processes'];
     $worker->name = $name;
 }
