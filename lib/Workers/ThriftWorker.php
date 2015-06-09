@@ -5,6 +5,7 @@ use Workerman\Worker;
 use Thrift\ClassLoader\ThriftClassLoader;
 use Thrift\Protocol\TJSONProtocol;
 use Thrift\Transport\TFramedTransport;
+use Thrift\TMultiplexedProcessor;
 
 /**
  *  ThriftWorker
@@ -52,14 +53,29 @@ class ThriftWorker extends Worker
         }
         closedir($fp);
 
-        $loader->registerNamespace('handler', $this->conf['handler']);
+        $loader->registerNamespace('handler', dirname($this->conf['handler']));
         $loader->register();
 
-        $handlerClass = '\\handler\\' . $this->conf['service'];
-        $processorClass = "\\{$this->conf['service-ns']}\\{$this->conf['service']}Processor";
+        $processor = new TMultiplexedProcessor();
+        $fp = opendir($this->conf['handler']);
+        while($dir = readdir($fp)) {
+            if ($dir{0} === '.') {
+                continue;
+            }
+            // handler/Service.php
+            $service = substr($dir, 0, -4);
+            $handlerClass = '\\handler\\' . $service;
+            $processorClass = "\\{$this->conf['service-ns']}\\{$service}Processor";
 
-        $handler = new $handlerClass();
-        $this->processor = new $processorClass($handler);
+            $handler = new $handlerClass();
+            $p = new $processorClass($handler);
+            $processor->registerProcessor($service, $p);
+
+            echo "$service\n";
+        }
+        closedir($fp);
+
+        $this->processor = $processor;
     }
 
     public function onMessage($connection, $data)

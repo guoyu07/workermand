@@ -12,7 +12,7 @@
             "worker_processes":1,
             "worker_class":"ThriftWorker",
             "gen-php":"doc/thrift-service/gen-php",
-            "handler":"doc/thrift-service",
+            "handler":"doc/thrift-service/handler",
             "service":"Calculator",
             "service-ns":"tutorial"
         }

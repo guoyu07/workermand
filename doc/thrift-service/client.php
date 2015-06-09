@@ -39,6 +39,7 @@ use Thrift\Transport\TSocket;
 use Thrift\Transport\THttpClient;
 use Thrift\Transport\TFramedTransport;
 use Thrift\Exception\TException;
+use Thrift\Protocol\TMultiplexedProtocol;
 
 try {
   if (array_search('--http', $argv)) {
@@ -48,7 +49,12 @@ try {
   }
   $transport = new TFramedTransport($socket, 1024, 1024);
   $protocol = new TJSONProtocol($transport);
-  $client = new \tutorial\CalculatorClient($protocol);
+
+  $mp = new TMultiplexedProtocol($protocol, 'Calculator');
+  $client = new \tutorial\CalculatorClient($mp);
+
+  $mp = new TMultiplexedProtocol($protocol, 'Duck');
+  $dclient = new \tutorial\DuckClient($mp);
 
   $transport->open();
 
@@ -79,6 +85,9 @@ try {
 
   $log = $client->getStruct(1);
   print "Log: $log->value\n";
+
+  $ret = $dclient->cry('gaga');
+  print "Log: $ret\n";
 
   $transport->close();
 
