@@ -1,0 +1,2 @@
+# workermand
+基于workerman的php服务器，支持thrift。与官方的workerman-thrift实现不同，更符合thrift的tnonblockingserver的行为定义。
