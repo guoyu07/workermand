@@ -1,5 +1,5 @@
 <?php
-namespace Workers;
+namespace Workermand\Workers;
 
 use Workerman\Worker;
 use Thrift\ClassLoader\ThriftClassLoader;
@@ -27,10 +27,8 @@ class ThriftWorker extends Worker
             throw new \Exception('gen-php handler is required');
         }
 
-        list($scheme, $address) = explode(':', $socket_name, 2);
-        $socket_name = 'ThriftFrame:'.$address;
-
         parent::__construct($socket_name, $context_option);
+        $this->_protocol = '\\Workermand\\Protocols\\ThriftFrame';
 
         $conf['gen-php'] = $this->checkPathConf($conf['gen-php']);
         $conf['handler'] = $this->checkPathConf($conf['handler']);
@@ -80,7 +78,7 @@ class ThriftWorker extends Worker
 
     public function onMessage($connection, $data)
     {
-        $transport = new TFramedTransport(new \Transport\WManConnection($data, $connection));
+        $transport = new TFramedTransport(new \Workermand\Transport\WManConnection($data, $connection));
         $protocol = new TJSONProtocol($transport, true, true);
 
         //$transport->open();

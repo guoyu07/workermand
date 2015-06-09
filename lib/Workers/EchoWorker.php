@@ -2,7 +2,7 @@
 /**
  *  EchoWorker
  */
-namespace Workers;
+namespace Workermand\Workers;
 
 use Workerman\Worker;
 

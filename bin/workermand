@@ -10,7 +10,7 @@ define('WORKERMAND_VER', 'workermand/0.0.1 (workerman/' . Worker::VERSION . ')')
 $opt_show_ver = false;
 $opt_show_help = false;
 $opt_signal = null;
-$conf_file = WORKERMAND_ROOT . '/etc/workerman.json';
+$conf_file = WORKERMAND_ROOT . '/etc/workermand.json';
 
 $options = getopt("hvs:c:");
 foreach ($options as $opt => $v) {
@@ -86,12 +86,10 @@ if ($conf === NULL) {
     return 1;
 }
 
-$loader->set('Workers', WORKERMAND_ROOT . '/lib');
-$loader->set('Protocols', WORKERMAND_ROOT . '/lib');
-$loader->set('Transport', WORKERMAND_ROOT . '/lib');
+$loader->setPsr4('Workermand\\', WORKERMAND_ROOT . '/lib');
 
 foreach ($conf['apps'] as $name => $app) {
-    $className = "\\Workers\\{$app['worker_class']}";
+    $className = "\\Workermand\\Workers\\{$app['worker_class']}";
     if (!class_exists($className)) {
         write_stderr('class not exists:' . $className. PHP_EOL);
         return 1;

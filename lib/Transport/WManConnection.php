@@ -1,6 +1,6 @@
 <?php
 
-namespace Transport;
+namespace Workermand\Transport;
 
 use Thrift\Transport\TTransport;
 use Thrift\Exception\TException;
