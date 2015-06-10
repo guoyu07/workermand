@@ -1,6 +1,5 @@
 {
     "user":"nobody",
-    "group":"nobody",
     "apps":{
         "echo":{
             "listen":"tcp://127.0.0.1:5101",
@@ -13,7 +12,6 @@
             "worker_class":"ThriftWorker",
             "gen-php":"doc/thrift-service/gen-php",
             "handler":"doc/thrift-service/handler",
-            "service":"Calculator",
             "service-ns":"tutorial"
         }
     }

@@ -43,17 +43,9 @@ if ($opt_show_ver) {
             "Options:" .PHP_EOL.
             "  -h         : this help" .PHP_EOL.
             "  -v            : show version and exit" .PHP_EOL.
-            "  -m            : show all modules and exit" .PHP_EOL.
-            "  -l            : show all directives and exit" .PHP_EOL.
-            "  -V            : show version, modules and configure options ".
-                               "then exit" .PHP_EOL.
             "  -t            : test configuration and exit" .PHP_EOL.
-            "  -d            : dump configuration and exit" .PHP_EOL.
-            "  -q            : suppress non-error messages ".
-                               "during configuration testing" .PHP_EOL.
             "  -s signal     : send signal to a master process: ".
                                "stop, quit, reopen, reload" .PHP_EOL.
-            "  -p prefix     : set prefix path (default: NONE)" .PHP_EOL.
             "  -c filename   : set configuration file (default: )".PHP_EOL
         );
     }

@@ -1,7 +1,12 @@
 <?php
+/**
+ * TFramedTransport支持.
+ *
+ */
 namespace Workermand\Workers;
 
 use Workerman\Worker;
+use Workerman\Connection\ConnectionInterface;
 use Thrift\ClassLoader\ThriftClassLoader;
 use Thrift\Protocol\TJSONProtocol;
 use Thrift\Transport\TFramedTransport;
@@ -18,6 +23,10 @@ class ThriftWorker extends Worker
 
     /**
      * construct
+     *
+     * @param string $socket_name Socket(tcp://ip:port)
+     * @param array $context_option SoketOpt.
+     * @param mixed $conf 配置项.
      */
     public function __construct($socket_name = '', $context_option = array(), $conf = null)
     {
@@ -76,7 +85,15 @@ class ThriftWorker extends Worker
         $this->processor = $processor;
     }
 
-    public function onMessage($connection, $data)
+    /**
+     * 完整数据包处理.
+     *
+     * @param ConnectionInterface $connection 连接.
+     * @param mixed $data 数据包.
+     *
+     * @return void
+     */
+    public function onMessage(ConnectionInterface $connection, $data)
     {
         $transport = new TFramedTransport(new \Workermand\Transport\WManConnection($data, $connection));
         $protocol = new TJSONProtocol($transport, true, true);
