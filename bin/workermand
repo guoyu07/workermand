@@ -10,9 +10,10 @@ define('WORKERMAND_VER', 'workermand/0.0.1 (workerman/' . Worker::VERSION . ')')
 $opt_show_ver = false;
 $opt_show_help = false;
 $opt_signal = null;
+$opt_daemon = false;
 $conf_file = WORKERMAND_ROOT . '/etc/workermand.json';
 
-$options = getopt("hvs:c:");
+$options = getopt("hvds:c:");
 foreach ($options as $opt => $v) {
 
     switch ($opt) {
@@ -22,6 +23,10 @@ foreach ($options as $opt => $v) {
         case 'h':
             $opt_show_ver = true;
             $opt_show_help = true;
+            continue;
+
+        case 'd':
+            $opt_daemon = true;
             continue;
 
         case 's':
@@ -44,6 +49,7 @@ if ($opt_show_ver) {
             "  -h         : this help" .PHP_EOL.
             "  -v            : show version and exit" .PHP_EOL.
             "  -t            : test configuration and exit" .PHP_EOL.
+            "  -d            : daemon" .PHP_EOL.
             "  -s signal     : send signal to a master process: ".
                                "stop, quit, reopen, reload" .PHP_EOL.
             "  -c filename   : set configuration file (default: )".PHP_EOL
@@ -92,7 +98,11 @@ foreach ($conf['apps'] as $name => $app) {
     $worker->name = $name;
 }
 
-exec_worker('workermand', 'start');
+if ($opt_daemon) {
+    exec_worker('workermand', 'start', '-d');
+} else {
+    exec_worker('workermand', 'start');
+}
 
 function write_stderr($str)
 {
