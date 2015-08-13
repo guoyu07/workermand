@@ -1,9 +1,8 @@
 {
     "user":"nobody",
-    "group":"nobody",
     "apps":{
         "echo":{
-            "listen":"tcp://127.0.0.1:5101",
+            "listen":"tcp://0.0.0.0:5101",
             "worker_processes":1,
             "worker_class":"EchoWorker"
         }
