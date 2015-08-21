@@ -5,8 +5,8 @@
             "listen":"tcp://0.0.0.0:9090",
             "worker_processes":1,
             "worker_class":"ThriftWorker",
-            "gen-php":"doc/thrift-service/gen-php",
-            "handler":"doc/thrift-service/handler",
+            "gen-php":"/usr/src/thrift-service/gen-php",
+            "handler":"/usr/src/thrift-service/handler",
             "service-ns":"tutorial"
         }
     }
