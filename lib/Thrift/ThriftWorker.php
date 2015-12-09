@@ -3,13 +3,13 @@
  * TFramedTransport支持.
  *
  */
-namespace Workermand\Workers;
+namespace Workermand\Thrift;
 
 use Workerman\Worker;
 use Workerman\Connection\ConnectionInterface;
 use Thrift\ClassLoader\ThriftClassLoader;
 use Thrift\Protocol\TJSONProtocol;
-use Thrift\Transport\TFramedTransport;
+//use Thrift\Transport\TFramedTransport;
 use Thrift\TMultiplexedProcessor;
 
 /**
@@ -37,7 +37,7 @@ class ThriftWorker extends Worker
         }
 
         parent::__construct($socket_name, $context_option);
-        $this->_protocol = '\\Workermand\\Protocols\\ThriftFrame';
+        $this->_protocol = '\\Workermand\\Thrift\\FrameProtocol';
 
         $conf['gen-php'] = $this->checkPathConf($conf['gen-php']);
         $conf['handler'] = $this->checkPathConf($conf['handler']);
@@ -95,7 +95,7 @@ class ThriftWorker extends Worker
      */
     public function onMessage(ConnectionInterface $connection, $data)
     {
-        $transport = new TFramedTransport(new \Workermand\Transport\WManConnection($data, $connection));
+        $transport = new \Thrift\Transport\TFramedTransport(new TFramedTransport($data, $connection));
         $protocol = new TJSONProtocol($transport, true, true);
 
         //$transport->open();

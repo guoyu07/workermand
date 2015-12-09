@@ -1,6 +1,6 @@
 <?php
 
-namespace Workermand\Transport;
+namespace Workermand\Thrift;
 
 use Thrift\Transport\TTransport;
 use Thrift\Exception\TException;
@@ -13,7 +13,7 @@ use Workerman\Connection\ConnectionInterface;
  *
  * @package thrift.transport
  */
-class WManConnection extends TTransport
+class TFramedTransport extends TTransport
 {
 
     /**
@@ -48,7 +48,7 @@ class WManConnection extends TTransport
     public function read($len)
     {
         if ((strlen($this->rBuf) - $this->rp) < $len) {
-            throw new TTransportException('WManConnection: Could not read '.$len.' bytes');
+            throw new TTransportException('TFramedTransport: Could not read '.$len.' bytes');
         }
 
         $data = substr($this->rBuf, $this->rp, $len);

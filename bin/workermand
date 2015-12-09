@@ -87,7 +87,7 @@ if ($conf === NULL) {
 $loader->setPsr4('Workermand\\', WORKERMAND_ROOT . '/lib');
 
 foreach ($conf['thrift'] as $app) {
-    $worker = new \Workermand\Workers\ThriftWorker($app['listen'], null, $app);
+    $worker = new \Workermand\Thrift\ThriftWorker($app['listen'], null, $app);
     $worker->count = $app['worker_processes'];
     $worker->name = $app['ns'];
     $worker->user = $conf['user'];

@@ -1,30 +1,19 @@
 <?php 
-/**
- * This file is part of workerman.
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the MIT-LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @author walkor<walkor@workerman.net>
- * @copyright walkor<walkor@workerman.net>
- * @link http://www.workerman.net/
- * @license http://www.opensource.org/licenses/mit-license.php MIT License
- */
-namespace Workermand\Protocols;
+
+namespace Workermand\Thrift;
 
 use \Workerman\Connection\ConnectionInterface;
 
 /**
  * RPC 协议解析 相关
- * 协议格式为 [json字符串\n]
  * @author walkor <worker-man@qq.com>
  * */
-class ThriftFrame implements \Workerman\Protocols\ProtocolInterface
+class FrameProtocol implements \Workerman\Protocols\ProtocolInterface
 {
     /**
      * 检查包的完整性
      * 如果能够得到包长，则返回包的在buffer中的长度，否则返回0继续等待数据
+     *
      * @param string $buffer
      */
     public static function input($recv_buffer, ConnectionInterface $connection)
