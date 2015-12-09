@@ -86,16 +86,11 @@ if ($conf === NULL) {
 
 $loader->setPsr4('Workermand\\', WORKERMAND_ROOT . '/lib');
 
-foreach ($conf['apps'] as $name => $app) {
-    $className = "\\Workermand\\Workers\\{$app['worker_class']}";
-    if (!class_exists($className)) {
-        write_stderr('class not exists:' . $className. PHP_EOL);
-        return 1;
-    }
-
-    $worker = new $className($app['listen'], null, $app);
+foreach ($conf['thrift'] as $app) {
+    $worker = new \Workermand\Workers\ThriftWorker($app['listen'], null, $app);
     $worker->count = $app['worker_processes'];
-    $worker->name = $name;
+    $worker->name = $app['ns'];
+    $worker->user = $conf['user'];
 }
 
 if ($opt_daemon) {
@@ -115,5 +110,6 @@ function exec_worker()
 
     $argv = func_get_args();
     $argc = count($argv);
+    Worker::$logFile = '/tmp/workerman.log';
     Worker::runAll();
 }

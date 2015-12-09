@@ -1,13 +1,14 @@
 {
     "user":"nobody",
-    "apps":{
-        "thrift-rpc":{
+    "thrift":[
+        {
             "listen":"tcp://0.0.0.0:9090",
             "worker_processes":1,
-            "worker_class":"ThriftWorker",
+            "ns":"tutorial",
             "gen-php":"doc/thrift-service/gen-php",
             "handler":"doc/thrift-service/handler",
-            "service-ns":"tutorial"
+            "service-ns":"tutorial",
+            "user":"nobody"
         }
-    }
+    ]
 }
