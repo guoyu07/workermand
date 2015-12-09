@@ -1,115 +1,196 @@
 #!/usr/bin/env php
 <?php
-define('WORKERMAND_ROOT', dirname(dirname(__FILE__)));
+define('WORKERMAND_ROOT', dirname(dirname(__FILE__)) . '/');
 
-$loader = require WORKERMAND_ROOT . '/vendor/autoload.php';
+$loader = require WORKERMAND_ROOT . 'vendor/autoload.php';
 use Workerman\Worker;
 
 define('WORKERMAND_VER', 'workermand/0.0.1 (workerman/' . Worker::VERSION . ')');
 
-$opt_show_ver = false;
-$opt_show_help = false;
-$opt_signal = null;
-$opt_daemon = false;
-$conf_file = WORKERMAND_ROOT . '/etc/workermand.json';
+$ret = w8d_main();
+exit($ret);
 
-$options = getopt("hvds:c:");
-foreach ($options as $opt => $v) {
+function w8d_main()
+{
+    $opt_show_ver = false;
+    $opt_show_help = false;
+    $opt_signal = null;
+    $opt_daemon = false;
+    $conf_file = WORKERMAND_ROOT . 'etc/workermand.json';
 
-    switch ($opt) {
-        case 'v':
-            $opt_show_ver = true; continue;
+    $options = getopt("hvds:c:");
+    foreach ($options as $opt => $v) {
 
-        case 'h':
-            $opt_show_ver = true;
-            $opt_show_help = true;
-            continue;
+        switch ($opt) {
+            case 'v':
+                $opt_show_ver = true; continue;
 
-        case 'd':
-            $opt_daemon = true;
-            continue;
+            case 'h':
+                $opt_show_ver = true;
+                $opt_show_help = true;
+                continue;
 
-        case 's':
-            $opt_signal = $v;
-            continue;
+            case 'd':
+                $opt_daemon = true;
+                continue;
 
-        case 'c':
-            $conf_file = $v;
-            continue;
+            case 's':
+                $opt_signal = $v;
+                continue;
+
+            case 'c':
+                $conf_file = $v;
+                continue;
+        }
     }
-}
 
-if ($opt_show_ver) {
-    write_stderr('workermand version: ' . WORKERMAND_VER . PHP_EOL);
+    if ($opt_show_ver) {
+        w8d_write_stderr('workermand version: ' . WORKERMAND_VER);
 
-    if ($opt_show_help) {
-        write_stderr(
-            "Usage: workermand [-hv] [-s signal] [-c filename]" . PHP_EOL . PHP_EOL.
-            "Options:" .PHP_EOL.
-            "  -h         : this help" .PHP_EOL.
-            "  -v            : show version and exit" .PHP_EOL.
-            "  -t            : test configuration and exit" .PHP_EOL.
-            "  -d            : daemon" .PHP_EOL.
-            "  -s signal     : send signal to a master process: ".
-                               "stop, quit, reopen, reload" .PHP_EOL.
-            "  -c filename   : set configuration file (default: )".PHP_EOL
-        );
+        if ($opt_show_help) {
+            w8d_write_stderr(
+                "Usage: workermand [-hv] [-s signal] [-c filename]" . PHP_EOL . PHP_EOL.
+                "Options:" .PHP_EOL.
+                "  -h         : this help" .PHP_EOL.
+                "  -v            : show version and exit" .PHP_EOL.
+                "  -t            : test configuration and exit" .PHP_EOL.
+                "  -d            : daemon" .PHP_EOL.
+                "  -s signal     : send signal to a master process: ".
+                                   "stop, quit, reopen, reload" .PHP_EOL.
+                "  -c filename   : set configuration file (default: )".PHP_EOL
+            );
+        }
+        return 0;
+    }
+
+    $conf = w8d_init_conf($conf_file);
+
+    if ($opt_signal) {
+        return w8d_kill($opt_signal);
+    }
+
+    global $loader;
+    $loader->setPsr4('Workermand\\', WORKERMAND_ROOT . 'lib');
+
+    w8d_init_workers($conf);
+
+    if ($opt_daemon) {
+        w8d_exec('start -d');
+    } else {
+        w8d_exec('start');
     }
     return 0;
 }
 
-if ($opt_signal) {
-    switch ($opt_signal) {
+function w8d_write_stderr($str)
+{
+    file_put_contents('php://stderr', $str . PHP_EOL);
+}
+
+/**
+ * 重构命令行，以匹配workerman的解析.
+ *
+ * @param string $cmd Workerman支持的命令.
+ *
+ * @return void
+ */
+function w8d_exec($cmd)
+{
+    global $argv, $argc;
+
+    $arr = explode(' ', $cmd);
+    array_unshift($arr, $argv[0]);
+    $argv = $arr;
+
+    $argc = count($argv);
+    Worker::runAll();
+}
+
+/**
+ * 初始全局配置项.
+ *
+ * @param string $conf_file 配置文件路径.
+ *
+ * @return 配置集.
+ */
+function w8d_init_conf($conf_file)
+{
+    if (!file_exists($conf_file)) {
+        w8d_write_stderr('conf file not exists:' . $conf_file);
+        exit(1);
+    }
+    $conf = json_decode(file_get_contents($conf_file), true);
+    if ($conf === NULL) {
+        w8d_write_stderr($conf_file . ' does not contain valid JSON');
+        exit(1);
+    }
+
+    if (array_key_exists('pid', $conf)) {
+        if ($conf['pid']{0} != '/') {
+            $conf['pid'] = WORKERMAND_ROOT . $conf['pid'];
+        }
+        Worker::$pidFile = $conf['pid'];
+    }
+    if (array_key_exists('log', $conf)) {
+        if ($conf['log']{0} != '/') {
+            $conf['log'] = WORKERMAND_ROOT . $conf['log'];
+        }
+        Worker::$logFile = $conf['log'];
+    }
+    return $conf;
+}
+
+/**
+ * master -> worker 发送信号.
+ *
+ * @param string $signal 语义命令.
+ *
+ * @return integer
+ */
+function w8d_kill($signal)
+{
+    switch ($signal) {
         case 'stop':
         case 'reload':
         case 'restart':
         case 'status':
-            exec_worker('workermand', $opt_signal);
+            w8d_exec($signal);
             break;
 
         default:
-            write_stderr('invalid signal:' . $opt_signal . PHP_EOL);
+            w8d_write_stderr('invalid signal:' . $signal);
             return 1;
     }
     return 0;
 }
 
-if (!file_exists($conf_file)) {
-    write_stderr('conf file not exists:' . $conf_file . PHP_EOL);
-    return 1;
-}
-$conf = json_decode(file_get_contents($conf_file), true);
-if ($conf === NULL) {
-    write_stderr($conf_file . ' does not contain valid JSON' . PHP_EOL);
-    return 1;
-}
-
-$loader->setPsr4('Workermand\\', WORKERMAND_ROOT . '/lib');
-
-foreach ($conf['thrift'] as $app) {
-    $worker = new \Workermand\Thrift\ThriftWorker($app['listen'], null, $app);
-    $worker->count = $app['worker_processes'];
-    $worker->name = $app['ns'];
-    $worker->user = $conf['user'];
-}
-
-if ($opt_daemon) {
-    exec_worker('workermand', 'start', '-d');
-} else {
-    exec_worker('workermand', 'start');
-}
-
-function write_stderr($str)
+/**
+ * 创建worker对象.
+ *
+ * @param mixed $conf 配置集.
+ *
+ * @return void
+ */
+function w8d_init_workers($conf)
 {
-    file_put_contents('php://stderr', $str);
+    w8d_init_thrift_worker($conf);
 }
 
-function exec_worker()
+/**
+ * 创建thrift worker对象.
+ *
+ * @param mixed $conf 配置集.
+ *
+ * @return void
+ */
+function w8d_init_thrift_worker($conf)
 {
-    global $argv, $argc;
+    foreach ($conf['thrift'] as $app) {
+        $worker = new \Workermand\Thrift\ThriftWorker($app['listen'], null);
+        $worker->count = $app['worker_processes'];
+        $worker->name = $app['ns'];
+        $worker->user = array_key_exists('user', $app) ? $app['user'] : $conf['user'];
 
-    $argv = func_get_args();
-    $argc = count($argv);
-    Worker::$logFile = '/tmp/workerman.log';
-    Worker::runAll();
+        $worker->setConf($app);
+    }
 }

@@ -1,17 +1,17 @@
 <?php
-
+/**
+ * 基于数据帧的transport实现.
+ *
+ * @author potterhe <potter.he@gmail.com>
+ */
 namespace Workermand\Thrift;
 
 use Thrift\Transport\TTransport;
-use Thrift\Exception\TException;
-use Thrift\Factory\TStringFuncFactory;
+use Thrift\Exception\TTransportException;
 use Workerman\Connection\ConnectionInterface;
 
 /**
- * Php stream transport. Reads to and writes from the php standard streams
- * php://input and php://output
  *
- * @package thrift.transport
  */
 class TFramedTransport extends TTransport
 {
@@ -28,6 +28,7 @@ class TFramedTransport extends TTransport
     {
         $this->conn = $conn;
         $this->rBuf = $input;
+        /* 缓冲区读指针 */
         $this->rp = 0;
     }
 
@@ -63,7 +64,7 @@ class TFramedTransport extends TTransport
 
     public function flush()
     {
-        /**/
+        /* 不实现，conn维护有缓冲区，且由事件驱动机制负责把conn缓冲区的数据写入传输层 */
     }
 
 }
