@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * 基于数据帧的transport实现.
+ *
+ * @author potterhe <potter.he@gmail.com>
+ */
 namespace Workermand\Thrift;
 
 use Thrift\Transport\TTransport;

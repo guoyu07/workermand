@@ -1,13 +1,16 @@
 <?php 
-
+/**
+ * 数据帧协议
+ *
+ * @author potterhe <potter.he@gmail.com>
+ */
 namespace Workermand\Thrift;
 
 use \Workerman\Connection\ConnectionInterface;
 
 /**
  * RPC 协议解析 相关
- * @author walkor <worker-man@qq.com>
- * */
+ */
 class FrameProtocol implements \Workerman\Protocols\ProtocolInterface
 {
     /**
