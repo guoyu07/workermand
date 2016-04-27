@@ -1,7 +1,7 @@
 {
     "user":"nobody",
-    "pid":"var/run/workermand.pid",
-    "log":"var/log/workermand.log",
+    "pid":"/var/run/workermand.pid",
+    "log":"/var/log/workermand.log",
     "thrift":[
         {
             "listen":"tcp://0.0.0.0:9090",

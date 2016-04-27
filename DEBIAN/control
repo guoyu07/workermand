@@ -1,0 +1,14 @@
+Package: workermand
+Source: workermand
+Version: 1.0.0
+Architecture: amd64
+Maintainer: potterhe <potter.he@gmail.com>
+Installed-Size: 8249
+Pre-Depends: dpkg (>= 1.16.1~)
+Depends: php5-cli
+Suggests: php-pear
+Provides: phpapi-20100525
+Section: php
+Priority: optional
+Homepage: https://github.com/potterhe/workermand
+Description: server-side, thrift server base workerman.
