@@ -28,35 +28,31 @@ class ThriftWorker extends Worker
      * @param array $context_option SoketOpt.
      * @param mixed $conf 配置项.
      */
-    public function __construct($socket_name = '', $context_option = array(), $conf = null)
+    public function __construct($socket_name = '', $context_option = array())
     {
-        if (!array_key_exists('gen-php', $conf)
-            || !array_key_exists('handler', $conf)
-        ) {
-            throw new \Exception('gen-php handler is required');
-        }
-
         parent::__construct($socket_name, $context_option);
         $this->_protocol = '\\Workermand\\Thrift\\FrameProtocol';
-
-        $conf['gen-php'] = $this->checkPathConf($conf['gen-php']);
-        $conf['handler'] = $this->checkPathConf($conf['handler']);
-        $this->conf = $conf;
 
         $this->onMessage = array($this, 'onMessage');
         $this->onWorkerStart = array($this, 'onStart');
     }
 
+    /**
+     * 进程启动时，运行.
+     *
+     * @return void
+     */
     public function onStart()
     {
         $loader = new ThriftClassLoader();
 
+        /* gen-php 目录的一级子目录，即命名空间. */
         $fp = opendir($this->conf['gen-php']);
-        while($dir = readdir($fp)) {
-            if ($dir{0} === '.') {
+        while($ns = readdir($fp)) {
+            if ($ns{0} === '.') {
                 continue;
             }
-            $loader->registerDefinition($dir, $this->conf['gen-php']);
+            $loader->registerDefinition($ns, $this->conf['gen-php']);
         }
         closedir($fp);
 
@@ -76,6 +72,10 @@ class ThriftWorker extends Worker
 
             $handler = new $handlerClass();
             $p = new $processorClass($handler);
+
+            /**
+             * 要求一个service name
+             */
             $processor->registerProcessor($service, $p);
 
             echo "$service\n";
@@ -101,6 +101,20 @@ class ThriftWorker extends Worker
         //$transport->open();
         $this->processor->process($protocol, $protocol);
         //$transport->close();
+    }
+
+    public function setConf($conf)
+    {
+        if (!array_key_exists('gen-php', $conf)
+            || !array_key_exists('handler', $conf)
+        ) {
+            throw new \Exception('gen-php handler is required');
+        }
+
+        $conf['gen-php'] = $this->checkPathConf($conf['gen-php']);
+        $conf['handler'] = $this->checkPathConf($conf['handler']);
+
+        $this->conf = $conf;
     }
 
     protected function checkPathConf($path)
