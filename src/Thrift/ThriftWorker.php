@@ -61,7 +61,7 @@ class ThriftWorker extends Worker
         $loader->register();
 
         $this->processor = new TMultiplexedProcessor();
-        $fp = opendir($this->conf['handler'] . '/' . $this->conf['namespace']);
+        $fp = opendir($this->conf['handler'] . DIRECTORY_SEPARATOR . $this->conf['namespace']);
         while($dir = readdir($fp)) {
             if ($dir{0} === '.') {
                 continue;
@@ -79,7 +79,7 @@ class ThriftWorker extends Worker
              */
             $this->processor->registerProcessor($service, $p);
 
-            self::log("register {$this->conf['namespace']} {$service}");
+            self::log("REGISTER: {$this->conf['namespace']} {$service}");
         }
         closedir($fp);
     }

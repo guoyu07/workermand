@@ -6,7 +6,7 @@ deb:
 	mkdir -p fakeroot/usr/bin/
 	cp workermand.phar fakeroot/usr/bin/
 	mkdir -p fakeroot/etc
-	cp etc/workermand.json fakeroot/etc
+	cp workermand.ini fakeroot/etc
 	mkdir -p fakeroot/etc/init.d
 	cp bin/init.d.workermand fakeroot/etc/init.d/workermand
 	chmod +x fakeroot/etc/init.d/workermand

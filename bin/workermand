@@ -9,7 +9,7 @@ if(!extension_loaded('posix')) {
     exit("Please install posix extension. See http://doc3.workerman.net/install/install.html\n");
 }
 
-define('WORKERMAND_ROOT', dirname(dirname(__FILE__)) . '/');
+define('WORKERMAND_ROOT', dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR);
 
 $loader = require WORKERMAND_ROOT . 'vendor/autoload.php';
 use Workerman\Worker;
