@@ -88,6 +88,8 @@ try {
 
   $ret = $dclient->cry('gaga');
   print "Log: $ret\n";
+  $ret = $dclient->cry('中文汉字');
+  print "Log: $ret\n";
 
   $transport->close();
 

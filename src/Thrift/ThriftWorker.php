@@ -95,7 +95,7 @@ class ThriftWorker extends Worker
      */
     public function onMessage(ConnectionInterface $connection, $data)
     {
-        $transport = new \Thrift\Transport\TFramedTransport(new TFramedTransport($data, $connection));
+        $transport = new \Thrift\Transport\TFramedTransport(new WFramedTransport($data, $connection));
         $protocol = new TJSONProtocol($transport, true, true);
 
         //$transport->open();

@@ -13,7 +13,7 @@ use Workerman\Connection\ConnectionInterface;
 /**
  *
  */
-class TFramedTransport extends TTransport
+class WFramedTransport extends TTransport
 {
 
     /**
