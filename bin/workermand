@@ -25,7 +25,7 @@ function w8d_main()
     $opt_show_help = false;
     $opt_signal = null;
     $opt_daemon = false;
-    $conf_file = WORKERMAND_ROOT . 'etc/workermand.json';
+    $conf_file = WORKERMAND_ROOT . 'workermand.ini';
 
     $options = getopt("hvds:c:");
     foreach ($options as $opt => $v) {
@@ -128,23 +128,38 @@ function w8d_init_conf($conf_file)
         w8d_write_stderr('conf file not exists:' . $conf_file);
         exit(1);
     }
-    $conf = json_decode(file_get_contents($conf_file), true);
-    if ($conf === NULL) {
-        w8d_write_stderr($conf_file . ' does not contain valid JSON');
+    $ini = parse_ini_file($conf_file, true, INI_SCANNER_NORMAL);
+    if (false === $ini) {
+        w8d_write_stderr($conf_file . ' does not contain valid ini');
         exit(1);
     }
 
-    if (array_key_exists('pid', $conf)) {
-        if ($conf['pid']{0} != '/') {
-            $conf['pid'] = WORKERMAND_ROOT . $conf['pid'];
+    $global = $ini['global'];
+    unset($ini['global']);
+
+    $conf = array('thrift' => array());
+    foreach ($ini as $sec => $app) {
+        if (!array_key_exists($app['protocol'], $conf)) {
+            continue;
         }
-        Worker::$pidFile = $conf['pid'];
+
+        if (!array_key_exists('user', $app)) {
+            $app['user'] = $global['user'];
+        }
+        array_push($conf[$app['protocol']], $app);
     }
-    if (array_key_exists('log', $conf)) {
-        if ($conf['log']{0} != '/') {
-            $conf['log'] = WORKERMAND_ROOT . $conf['log'];
+
+    if (array_key_exists('pid', $global)) {
+        if ($global['pid']{0} != '/') {
+            $global['pid'] = WORKERMAND_ROOT . $global['pid'];
         }
-        Worker::$logFile = $conf['log'];
+        Worker::$pidFile = $global['pid'];
+    }
+    if (array_key_exists('log', $global)) {
+        if ($global['log']{0} != '/') {
+            $global['log'] = WORKERMAND_ROOT . $global['log'];
+        }
+        Worker::$logFile = $global['log'];
     }
     return $conf;
 }
@@ -195,10 +210,10 @@ function w8d_init_workers($conf)
 function w8d_init_thrift_worker($conf)
 {
     foreach ($conf['thrift'] as $app) {
-        $worker = new \Workermand\Thrift\ThriftWorker($app['listen'], null);
+        $worker = new \Workermand\Thrift\ThriftWorker('tcp://' . $app['listen'], null);
         $worker->count = $app['worker_processes'];
-        $worker->name = $app['ns'];
-        $worker->user = array_key_exists('user', $app) ? $app['user'] : $conf['user'];
+        $worker->name = $app['namespace'];
+        $worker->user = $app['user'];
 
         $worker->setConf($app);
     }

@@ -8,8 +8,8 @@ namespace Workermand\Thrift;
 use Workerman\Worker;
 use Workerman\Connection\ConnectionInterface;
 use Thrift\ClassLoader\ThriftClassLoader;
-use Thrift\Protocol\TJSONProtocol;
-//use Thrift\Transport\TFramedTransport;
+use Thrift\Protocol\TBinaryProtocol;
+use Thrift\Transport\TFramedTransport;
 use Thrift\TMultiplexedProcessor;
 
 /**
@@ -56,19 +56,20 @@ class ThriftWorker extends Worker
         }
         closedir($fp);
 
+        /* 注册handler, handler/NAMESPACE/SERVICE */
         $loader->registerNamespace('handler', dirname($this->conf['handler']));
         $loader->register();
 
-        $processor = new TMultiplexedProcessor();
-        $fp = opendir($this->conf['handler']);
+        $this->processor = new TMultiplexedProcessor();
+        $fp = opendir($this->conf['handler'] . '/' . $this->conf['namespace']);
         while($dir = readdir($fp)) {
             if ($dir{0} === '.') {
                 continue;
             }
-            // handler/Service.php
+            // handler/NAMESPACE/SERVICE.php
             $service = substr($dir, 0, -4);
-            $handlerClass = '\\handler\\' . $service;
-            $processorClass = "\\{$this->conf['service-ns']}\\{$service}Processor";
+            $handlerClass = "\\handler\\{$this->conf['namespace']}\\" . $service;
+            $processorClass = "\\{$this->conf['namespace']}\\{$service}Processor";
 
             $handler = new $handlerClass();
             $p = new $processorClass($handler);
@@ -76,13 +77,11 @@ class ThriftWorker extends Worker
             /**
              * 要求一个service name
              */
-            $processor->registerProcessor($service, $p);
+            $this->processor->registerProcessor($service, $p);
 
-            echo "$service\n";
+            self::log("register {$this->conf['namespace']} {$service}");
         }
         closedir($fp);
-
-        $this->processor = $processor;
     }
 
     /**
@@ -95,8 +94,9 @@ class ThriftWorker extends Worker
      */
     public function onMessage(ConnectionInterface $connection, $data)
     {
-        $transport = new \Thrift\Transport\TFramedTransport(new WFramedTransport($data, $connection));
-        $protocol = new TJSONProtocol($transport, true, true);
+        $transport = new TFramedTransport(new WFramedTransport($data, $connection));
+        /* TODO 支持 $this->conf['thrift_protocol'] */
+        $protocol = new TBinaryProtocol($transport, true, true);
 
         //$transport->open();
         $this->processor->process($protocol, $protocol);

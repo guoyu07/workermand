@@ -35,6 +35,7 @@ $loader->register();
  */
 
 use Thrift\Protocol\TJSONProtocol;
+use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Transport\TSocket;
 use Thrift\Transport\THttpClient;
 use Thrift\Transport\TFramedTransport;
@@ -48,7 +49,7 @@ try {
     $socket = new TSocket('localhost', 9090);
   }
   $transport = new TFramedTransport($socket, 1024, 1024);
-  $protocol = new TJSONProtocol($transport);
+  $protocol = new TBinaryProtocol($transport);
 
   $mp = new TMultiplexedProtocol($protocol, 'Calculator');
   $client = new \tutorial\CalculatorClient($mp);
