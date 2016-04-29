@@ -96,6 +96,11 @@ function w8d_write_stderr($str)
     file_put_contents('php://stderr', $str . PHP_EOL);
 }
 
+function w8d_write_stdout($str)
+{
+    file_put_contents('php://stdout', $str . PHP_EOL);
+}
+
 /**
  * 重构命令行，以匹配workerman的解析.
  *
@@ -160,6 +165,7 @@ function w8d_init_conf($conf_file)
             $global['log'] = WORKERMAND_ROOT . $global['log'];
         }
         Worker::$logFile = $global['log'];
+        Worker::$stdoutFile = $global['log'];
     }
     return $conf;
 }

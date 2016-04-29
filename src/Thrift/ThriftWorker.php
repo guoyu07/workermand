@@ -79,7 +79,7 @@ class ThriftWorker extends Worker
              */
             $this->processor->registerProcessor($service, $p);
 
-            self::log("REGISTER: {$this->conf['namespace']} {$service}");
+            w8d_write_stdout("REGISTER: {$this->conf['namespace']} {$service}");
         }
         closedir($fp);
     }
@@ -94,8 +94,12 @@ class ThriftWorker extends Worker
      */
     public function onMessage(ConnectionInterface $connection, $data)
     {
+        /**
+         * TODO 支持 $this->conf['thrift_protocol']
+         * 统计处理时间.
+         * 处理超时.
+         */
         $transport = new TFramedTransport(new WFramedTransport($data, $connection));
-        /* TODO 支持 $this->conf['thrift_protocol'] */
         $protocol = new TBinaryProtocol($transport, true, true);
 
         //$transport->open();

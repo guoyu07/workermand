@@ -7,29 +7,32 @@
 >- 客户端:TMultiplexedProtocol
 
 ## getting started
+### thrift-demo
+thrift-demo 是一个sub module.
+
 ### 初始化环境和用例
 ```sh
 $ cd /PATH/TO/workermand
 $ composer install
 
-$ cd /PATH/TO/workermand/doc/thrift-service
+$ cd /PATH/TO/workermand/thrift-demo
 $ thrift -r --gen php:server tutorial.thrift
 ```
 
 ### 配置文件
-/PATH/TO/workermand/etc/workermand.json
+/PATH/TO/workermand/workermand.ini
 
 ### 运行
 #### 启动服务器
 ```sh
 $ cd /PATH/TO/workermand
-$ ./bin/workermand
+$ ./bin/workermand -c workermand.ini
 ```
 
 #### 客户端
 ```sh
 $ cd /PATH/TO/workermand
-$ ./doc/thrift-service/client.php
+$ ./test/client.php
 ```
 
 #### 服务器关闭，重启等
@@ -40,4 +43,18 @@ $ ./doc/thrift-service/client.php
 - 关闭.
 ```sh
 ./bin/workermand -s stop
+```
+
+## deb打包
+```sh
+make deb
+```
+## Docker打包
+
+## 超时
+当前没有server端的超时机制，需要依赖client端实施超时.
+```php
+$socket = new TSocket('localhost', 9090);
+$socket->setSendTimeout(3000);
+$socket->setRecvTimeout(3000);
 ```

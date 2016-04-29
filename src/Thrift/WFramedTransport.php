@@ -27,6 +27,7 @@ class WFramedTransport extends TTransport
     public function __construct($input, ConnectionInterface $conn)
     {
         $this->conn = $conn;
+        /* TODO TMemoryBuffer */
         $this->rBuf = $input;
         /* 缓冲区读指针 */
         $this->rp = 0;
@@ -49,7 +50,7 @@ class WFramedTransport extends TTransport
     public function read($len)
     {
         if ((strlen($this->rBuf) - $this->rp) < $len) {
-            throw new TTransportException('TFramedTransport: Could not read '.$len.' bytes');
+            throw new TTransportException('WFramedTransport: Could not read '.$len.' bytes');
         }
 
         $data = substr($this->rBuf, $this->rp, $len);
