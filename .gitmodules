@@ -1,0 +1,3 @@
+[submodule "thrift-demo"]
+	path = thrift-demo
+	url = https://github.com/potterhe/thrift-demo

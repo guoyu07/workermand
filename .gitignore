@@ -1,4 +1,5 @@
 vendor
+fakeroot
 composer.lock
 *.swp
 tags
