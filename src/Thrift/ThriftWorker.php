@@ -102,7 +102,6 @@ class ThriftWorker extends Worker
         $transport = new TFramedTransport(new WFramedTransport($data, $connection));
         $protocol = new TBinaryProtocol($transport, true, true);
 
-        //$transport->open();
         $this->processor->process($protocol, $protocol);
         //$transport->close();
     }

@@ -1,1 +1,1 @@
-ctags -R vendor/walkor/workerman/ vendor/apache/thrift/lib/php/lib/ lib/
+ctags -R vendor/walkor/workerman/ vendor/apache/thrift/lib/php/lib/ src/
